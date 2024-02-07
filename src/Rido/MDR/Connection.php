@@ -154,7 +154,10 @@ class Connection
         }
 
         $this->client = new Client([
-            'http_errors' => true,
+            'http_errors' => false,
+            'headers' => [
+                'Accept' => 'application/json'
+            ]
         ]);
 
         return $this->client;
@@ -170,9 +173,11 @@ class Connection
     private function parseResponse(Response $response)
     {
         try {
-            $content = $response->getBody()->getContents();
+            $content = utf8_encode($response->getBody()->getContents());
 
-            $lines = explode(PHP_EOL, $content);
+            $content = str_replace("\n", '<br>', $content);
+
+            $lines = explode('<br>', $content);
 
             if ($lines && $this->parseResponseLines($lines)) {
                 return $this->responseData;
@@ -194,6 +199,8 @@ class Connection
     private function parseResponseLines(array $lines)
     {
         $errors = [];
+
+
 
         foreach ($lines as $line) {
             $exp = explode('=', $line, 2);
